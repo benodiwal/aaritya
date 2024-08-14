@@ -6,15 +6,17 @@ import (
 
 	database "github.com/benodiwal/server/internal/database/postgres"
 	"github.com/benodiwal/server/internal/env"
+	"github.com/benodiwal/server/internal/repositories"
 	"github.com/benodiwal/server/internal/routes"
 )
 
 func Run() {
 	env.LoadEnv()
 	logger := log.Default()
-	database.ConnectDatabase(logger)
+	db := database.ConnectDatabase(logger)
+	ctx := repositories.NewContext(db.DB, logger)
 
-	router := routes.New()
+	router := routes.New(ctx)
 	router.RegisterMiddlewares()
 	router.RegisterRoutes()
 
