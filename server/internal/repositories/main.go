@@ -8,16 +8,18 @@ import (
 )
 
 type Context struct {
-	db     *gorm.DB
-	logger *log.Logger
+	UserRepository *UserRepository
+	db            *gorm.DB
+	logger        *log.Logger
 }
 
 type Transaction = func (*gorm.DB, *Context) bool
 
 func NewContext(db *gorm.DB, logger *log.Logger) *Context {
 	return &Context{
-		 db: db,
-		 logger: logger, 
+		UserRepository: NewUserRepository(db),
+		db: db,
+		logger: logger,
 	}
 }
 
