@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/benodiwal/server/internal/handlers/auth"
+	"github.com/benodiwal/server/internal/handlers/quiz"
 	"github.com/benodiwal/server/internal/handlers/user"
 	"github.com/gin-gonic/gin"
 )
@@ -22,4 +23,7 @@ func (r *Router) RegisterRoutes() {
 
 	userHandler := user.New(r.Engine, r.ctx)
 	userHandler.RegisterRoutes()
+
+	quizHandler := quiz.New(r.Engine, r.ctx)
+	quizHandler.RegisterRoutes()
 }
