@@ -13,6 +13,8 @@ type UserHandler struct {
 func (u *UserHandler) RegisterRoutes() {
 	user := u.router.Group("/user")
 	user.GET("/me", u.Me)
+	user.GET("/quizes", u.Quizes)
+	user.GET("/leaderboard", u.Leaderboard)
 }
 
 func New(router *gin.Engine, ctx *repositories.Context) *UserHandler {
