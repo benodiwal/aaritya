@@ -10,3 +10,11 @@ type User struct {
 	TotalPoints int `gorm:"default:0"`
 	Quizzes  []Quiz `gorm:"foreignKey:UserID"`
 }
+
+func (u *User) WithoutPassword() *User {
+	return &User {
+		Model: u.Model,
+		Username: u.Username,
+		Email: u.Email,
+	}
+}

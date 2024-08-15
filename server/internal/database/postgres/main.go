@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/benodiwal/server/internal/env"
+	"github.com/benodiwal/server/internal/models"
 	"github.com/jinzhu/gorm"
 	_ "github.com/lib/pq"
 )
@@ -36,4 +37,8 @@ func ConnectDatabase(logger *log.Logger) *Database {
 	}
 
 	return &Database{DB: DB, logger: logger}
+}
+
+func (d *Database) MigrateModels() {
+	d.DB.AutoMigrate(&models.User {}, &models.Option {}, &models.Question {}, &models.QuizAttempt {}, &models.Quiz {}, &models.UserAnswer {}, &models.Topic {})
 }

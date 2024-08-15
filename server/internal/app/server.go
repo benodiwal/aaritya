@@ -14,6 +14,7 @@ func Run() {
 	env.LoadEnv()
 	logger := log.Default()
 	db := database.ConnectDatabase(logger)
+	db.MigrateModels()
 	ctx := repositories.NewContext(db.DB, logger)
 
 	router := routes.New(ctx)
