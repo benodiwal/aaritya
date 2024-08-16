@@ -1,29 +1,27 @@
-import 'package:aaritya/core/network/api_service.dart';
+import 'package:aaritya/presentation/widgets/bottom_navigation_bar.dart';
+import 'package:aaritya/presentation/widgets/featured_categories.dart';
+import 'package:aaritya/presentation/widgets/header.dart';
+import 'package:aaritya/presentation/widgets/play_card.dart';
+import 'package:aaritya/presentation/widgets/recent_results.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatelessWidget {
-  final ApiService _apiService = ApiService();
-
-  void _logout(BuildContext context) async {
-    await _apiService.logout();
-    Navigator.pushReplacementNamed(context, '/login');
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Home'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.logout),
-            onPressed: () => _logout(context),
-          ),
-        ],
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Header(),
+            PlayCard(),
+            FeaturedCategories(),
+            RecentResults(),
+          ],
+        ),
       ),
-      body: Center(
-        child: Text('Welcome to the Home Page!'),
-      ),
+      bottomNavigationBar: BuildBottomNavigationBar(),
     );
   }
 }
