@@ -93,6 +93,22 @@ func (r *UserRepository) GetTopUsers(limit int) ([]models.User, error) {
 	return users, err
 }
 
+func (r *UserRepository) GetUserAverageScore(userID uint) (float64, error) {
+	var avgScore float64
+	err := r.db.Model(&models.QuizAttempt{}).
+		Select("COALESCE(AVG(score), 0) as avg_score").
+		Where("user_id = ?", userID).
+		Scan(&avgScore).Error
+	return avgScore, err
+}
+
+func (r *UserRepository) GetUserTotalQuizzes(userID uint) (int64, error) {
+	var totalQuizzes int64
+	err := r.db.Model(&models.QuizAttempt{}).
+		Where("user_id = ?", userID).
+		Count(&totalQuizzes).Error
+	return totalQuizzes, err
+}
 
 func (r *UserRepository) GetUserRank(userID uint) (int, error) {
 	var rank int

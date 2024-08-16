@@ -46,3 +46,23 @@ func (u *UserHandler) Rank(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, gin.H {"rank": rank})
 }
+
+func (u *UserHandler) Total(ctx *gin.Context) {
+	userId, _ := ctx.Get("userId")
+	score, err := u.ctx.UserRepository.GetUserAverageScore(userId.(uint))
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H {"error": "Failed to fetch user average score"})
+		return
+	}
+	ctx.JSON(http.StatusOK, score)
+}
+
+func (u *UserHandler) Average(ctx *gin.Context) {
+	userId, _ := ctx.Get("userId")
+	total, err := u.ctx.UserRepository.GetUserTotalQuizzes(userId.(uint))
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H {"error": "Failed to fetch user total quizzes"})
+		return
+	}
+	ctx.JSON(http.StatusOK, total)
+}

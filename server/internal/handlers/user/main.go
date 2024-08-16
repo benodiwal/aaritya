@@ -18,6 +18,8 @@ func (u *UserHandler) RegisterRoutes() {
 	user.GET("/quizes", u.Quizes)
 	user.GET("/rank", u.Rank)
 	user.GET("/leaderboard", u.Leaderboard)
+	user.GET("/avg", u.Average)
+	user.GET("/total", u.Total)
 }
 
 func New(router *gin.Engine, ctx *repositories.Context) *UserHandler {
