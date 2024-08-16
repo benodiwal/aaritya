@@ -16,6 +16,7 @@ func (u *UserHandler) RegisterRoutes() {
 	user.Use(middlewares.IsAuthenticated())
 	user.GET("/me", u.Me)
 	user.GET("/quizes", u.Quizes)
+	user.GET("/rank", u.Rank)
 	user.GET("/leaderboard", u.Leaderboard)
 }
 

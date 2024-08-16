@@ -7,7 +7,7 @@ import (
 )
 
 func (u *UserHandler) Me(ctx *gin.Context) {
-	userId, _ := ctx.Get("user_id")
+	userId, _ := ctx.Get("userId")
 	user, err := u.ctx.UserRepository.GetUserByID(userId.(uint))
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H {"error": "Failed to fetch user data"})
@@ -17,7 +17,7 @@ func (u *UserHandler) Me(ctx *gin.Context) {
 }
 
 func (u *UserHandler) Quizes(ctx *gin.Context) {
-	userId, _ := ctx.Get("user_id")
+	userId, _ := ctx.Get("userId")
 	limit := 10
 	quizzes, err := u.ctx.QuizRepository.GetRecentQuizzesByUserID(userId.(uint), limit)
 	if err != nil {
@@ -35,4 +35,14 @@ func (u *UserHandler) Leaderboard(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, users)
+}
+
+func (u *UserHandler) Rank(ctx *gin.Context) {
+	userId, _ := ctx.Get("userId")
+	rank, err := u.ctx.UserRepository.GetUserRank(userId.(uint))
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H {"error": "Failed to fetch user rank"})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H {"rank": rank})
 }

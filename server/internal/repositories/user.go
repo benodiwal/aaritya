@@ -92,3 +92,23 @@ func (r *UserRepository) GetTopUsers(limit int) ([]models.User, error) {
 	err := r.db.Order("total_points DESC").Limit(limit).Find(&users).Error
 	return users, err
 }
+
+
+func (r *UserRepository) GetUserRank(userID uint) (int, error) {
+	var rank int
+	var user models.User
+
+	if err := r.db.Select("total_points").First(&user, userID).Error; err != nil {
+		return 0, err
+	}
+
+	if err := r.db.Model(&models.User{}).
+		Where("total_points > ?", user.TotalPoints).
+		Count(&rank).Error; err != nil {
+		return 0, err
+	}
+
+	rank++
+
+	return rank, nil
+}
