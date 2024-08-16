@@ -3,6 +3,7 @@ package quiz
 import (
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/benodiwal/server/internal/models"
 	"github.com/benodiwal/server/internal/transport/rest"
@@ -77,7 +78,7 @@ func (q *QuizHandler) GetQuizzes(ctx *gin.Context) {
 
 func (q *QuizHandler) Get(ctx *gin.Context) {
 	idStr := ctx.Param("id")
-	id, err := strconv.ParseUint(idStr, 10, 32)
+	id, _ := strconv.ParseUint(idStr, 10, 32)
 	quiz, err := q.ctx.QuizRepository.GetQuizByID(uint(id))
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H {"error": "Quiz not found"})
@@ -95,7 +96,73 @@ func (q *QuizHandler) SubmitQuizAttempt(ctx *gin.Context) {
 		return
 	}
 
-	userId := ctx.MustGet("user_id").(string)
+	userId := ctx.MustGet("user_id").(uint)
 
-	quiz, err := q.ctx.QuizRepository.GetQuizByID(req.QuizID)
+	_, err := q.ctx.QuizRepository.GetQuizByID(req.QuizID)
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H {"error": "Quiz not found"})
+		return
+	}
+
+	attempt := models.QuizAttempt {
+		UserID: userId,
+		QuizID: req.QuizID,
+		CompletedAt: time.Now(),
+	}
+
+	if err := q.ctx.QuizAttemptRepository.CreateQuizAttempt(&attempt); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H {"error": "Failed to create quiz attempt"})
+		return
+	}
+
+	score := 0
+	for _, answer := range req.Answers {
+		question, err := q.ctx.QuestionRepository.GetQuestionByID(answer.QuestionID)
+		if err != nil {
+			ctx.JSON(http.StatusNotFound, gin.H {"error": "Question not found"})
+			return
+		}
+
+		selectedOption, err := q.ctx.OptionRepository.GetOptionByID(answer.OptionID)
+		if err != nil {
+			ctx.JSON(http.StatusNotFound, gin.H {"error": "Option not found"})
+			return
+		}
+
+		userAnswer := models.UserAnswer {
+			AttemptID: attempt.ID,
+			QuestionID: answer.QuestionID,
+			OptionId: answer.OptionID,
+			IsCorrect: selectedOption.IsCorrect,
+		}
+
+		if err := q.ctx.UserAnswerRepository.CreateUserAnswer(&userAnswer); err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H {"error": "Failed to save user answer"})
+			return
+		}
+
+		if selectedOption.IsCorrect {
+			score += question.Points			
+		}
+	}
+
+	attempt.Score = score
+	err = q.ctx.QuizAttemptRepository.UpdateQuizAttempt(&attempt)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H {"error": "Failed to update quiz attempt score"})
+		return
+	}
+
+	user, err := q.ctx.UserRepository.GetUserByID(userId)
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H {"erro": "User not found"})
+		return
+	}
+	user.TotalPoints += score
+	err = q.ctx.UserRepository.UpdateUser(user)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H {"error": "Failed to update user's total points"})
+		return
+	}
+	ctx.JSON(http.StatusCreated, gin.H {"message": "Quiz Attempt submitted successfully", "score": score})
 }
