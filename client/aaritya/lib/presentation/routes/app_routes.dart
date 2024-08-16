@@ -1,6 +1,6 @@
-import 'package:aaritya/presentation/pages/home_page.dart';
 import 'package:aaritya/presentation/pages/login_page.dart';
 import 'package:aaritya/presentation/pages/signup_page.dart';
+import 'package:aaritya/presentation/widgets/bottom_navigation_bar.dart';
 import 'package:flutter/material.dart';
 
 class AppRoutes {
@@ -12,7 +12,7 @@ class AppRoutes {
       case '/signup':
         return MaterialPageRoute(builder: (_) => SignupPage());
       case '/home':
-        return MaterialPageRoute(builder: (_) => HomePage());
+        return MaterialPageRoute(builder: (_) => MainContainer());
       default:
         return MaterialPageRoute(builder: (_) => LoginPage());
     }

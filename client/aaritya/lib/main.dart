@@ -19,6 +19,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Aaritya',
+      debugShowCheckedModeBanner: false,
       initialRoute: isAuthenticated ? '/home' : '/login',
       onGenerateRoute: AppRoutes.generateRoute,
     );

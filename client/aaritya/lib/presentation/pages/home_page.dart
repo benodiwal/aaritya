@@ -1,4 +1,3 @@
-import 'package:aaritya/presentation/widgets/bottom_navigation_bar.dart';
 import 'package:aaritya/presentation/widgets/featured_categories.dart';
 import 'package:aaritya/presentation/widgets/header.dart';
 import 'package:aaritya/presentation/widgets/play_card.dart';
@@ -21,7 +20,6 @@ class HomePage extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: BuildBottomNavigationBar(),
     );
   }
 }
