@@ -1,4 +1,6 @@
 import 'package:aaritya/presentation/pages/home_page.dart';
+import 'package:aaritya/presentation/widgets/pages/create-quiz.dart';
+import 'package:aaritya/presentation/widgets/pages/profile.dart';
 import 'package:flutter/material.dart';
 
 class MainContainer extends StatefulWidget {
@@ -12,8 +14,8 @@ class _MainContainerState extends State<MainContainer> {
   final List<Widget> _pages = [
     HomePage(),
     BookPage(),
-    TimerPage(),
-    ProfilePage(),
+    CreateQuizPage(),
+    ProfilePage()
   ];
 
   void _onItemTapped(int index) {
@@ -53,26 +55,6 @@ class BookPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text('Book')),
       body: Center(child: Text('Book Page')),
-    );
-  }
-}
-
-class TimerPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Timer')),
-      body: Center(child: Text('Timer Page')),
-    );
-  }
-}
-
-class ProfilePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Profile')),
-      body: Center(child: Text('Profile Page')),
     );
   }
 }
