@@ -4,7 +4,7 @@ import "github.com/jinzhu/gorm"
 
 type Quiz struct {
 	gorm.Model
-	UserId string
+	UserId uint
 	Title  string
 	Description string
 	TimeLimit int

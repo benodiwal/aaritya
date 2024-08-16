@@ -37,7 +37,7 @@ func (r *QuizRepository) GetQuizzes(page, pageSize int) ([]models.Quiz, int64, e
 	return quizzes, totalCount, nil
 }
 
-func (r *QuizRepository) GetQuizByID(id string) (*models.Quiz, error) {
+func (r *QuizRepository) GetQuizByID(id uint) (*models.Quiz, error) {
 	var quiz models.Quiz
 	err := r.db.Preload("Questions.Options").Preload("Topics").First(&quiz, id).Error
 	if err != nil {

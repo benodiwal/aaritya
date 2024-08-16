@@ -16,7 +16,7 @@ func (q *QuizHandler) Create(ctx *gin.Context) {
 		return
 	}
 
-	userId := ctx.MustGet("user_id").(string)
+	userId := ctx.MustGet("user_id").(uint)
 
 	quiz := models.Quiz {
 		UserId: userId,
@@ -76,12 +76,26 @@ func (q *QuizHandler) GetQuizzes(ctx *gin.Context) {
 }
 
 func (q *QuizHandler) Get(ctx *gin.Context) {
-	id := ctx.Param("id")
-	quiz, err := q.ctx.QuizRepository.GetQuizByID(id)
+	idStr := ctx.Param("id")
+	id, err := strconv.ParseUint(idStr, 10, 32)
+	quiz, err := q.ctx.QuizRepository.GetQuizByID(uint(id))
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H {"error": "Quiz not found"})
 		return
 	}
 
 	ctx.JSON(http.StatusOK, quiz)
+}
+
+
+func (q *QuizHandler) SubmitQuizAttempt(ctx *gin.Context) {
+	var req rest.QuizAttemptRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H {"error": err.Error()})
+		return
+	}
+
+	userId := ctx.MustGet("user_id").(string)
+
+	quiz, err := q.ctx.QuizRepository.GetQuizByID(req.QuizID)
 }

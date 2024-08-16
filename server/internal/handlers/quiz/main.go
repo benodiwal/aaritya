@@ -12,10 +12,9 @@ type QuizHandler struct {
 
 func (q *QuizHandler) RegisterRoutes() {
 	quiz := q.router.Group("/quiz")
-	// quiz.GET("/", q.ListQuizzes)
+	quiz.GET("/", q.GetQuizzes)
 	quiz.POST("/", q.Create)
-	// quiz.GET("/:id", q.GetQuiz)
-	// quiz.DELETE("/:id", q.DeleteQuiz)
+	quiz.GET("/:id", q.Get)
 	// quiz.GET("/topic/:topicId", q.GetQuizzesByTopic)
 }
 
