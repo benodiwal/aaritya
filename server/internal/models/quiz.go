@@ -7,6 +7,7 @@ type Quiz struct {
 	UserId string
 	Title  string
 	Description string
+	TimeLimit int
 	TotalPoints int
 	Questions   []Question
 	Topics      []Topic `gorm:"many2many:quiz_topics;"`
