@@ -56,3 +56,9 @@ func (r *QuizRepository) UpdateQuiz(quiz *models.Quiz) error {
 func (r *QuizRepository) DeleteQuiz(id uint) error {
 	return r.db.Delete(&models.Quiz{}, id).Error
 }
+
+func (r *QuizRepository) GetRecentQuizzesByUserID(userID uint, limit int) ([]models.Quiz, error) {
+	var quizzes []models.Quiz
+	err := r.db.Where("user_id = ?", userID).Order("created_at DESC").Limit(limit).Find(&quizzes).Error
+	return quizzes, err
+}
