@@ -1,4 +1,5 @@
 import 'package:aaritya/presentation/pages/home_page.dart';
+import 'package:aaritya/presentation/pages/quiz_feed.dart';
 import 'package:aaritya/presentation/widgets/pages/create-quiz.dart';
 import 'package:aaritya/presentation/widgets/pages/profile.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +14,7 @@ class _MainContainerState extends State<MainContainer> {
 
   final List<Widget> _pages = [
     HomePage(),
-    BookPage(),
+    QuizFeedPage(),
     CreateQuizPage(),
     ProfilePage()
   ];
@@ -45,16 +46,6 @@ class _MainContainerState extends State<MainContainer> {
     return Scaffold(
       body: _pages[_selectedIndex],
       bottomNavigationBar: BuildBottomNavigationBar(),
-    );
-  }
-}
-
-class BookPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Book')),
-      body: Center(child: Text('Book Page')),
     );
   }
 }
