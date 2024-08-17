@@ -15,7 +15,7 @@ func (q *QuizHandler) RegisterRoutes() {
 	quiz := q.router.Group("/quiz")
 	quiz.Use(middlewares.IsAuthenticated())
 	quiz.GET("/", q.GetQuizzes)
-	quiz.POST("/", q.Create)
+	quiz.POST("", q.Create)
 	quiz.GET("/:id", q.Get)
 	// quiz.GET("/topic/:topicId", q.GetQuizzesByTopic)
 }

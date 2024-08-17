@@ -1,3 +1,4 @@
+import 'package:aaritya/core/network/api_service.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 
@@ -11,50 +12,51 @@ class QuizAttemptPage extends StatefulWidget {
 }
 
 class _QuizAttemptPageState extends State<QuizAttemptPage> {
+  final ApiService _apiService = ApiService();
   int _currentQuestionIndex = 0;
   List<int?> _userAnswers = [];
   bool _quizCompleted = false;
   Timer? _timer;
   int _timeRemaining = 0;
-
-  final List<Map<String, dynamic>> _questions = [
-    {
-      'question': 'What is the capital of France?',
-      'options': ['London', 'Berlin', 'Paris', 'Madrid'],
-      'correctAnswer': 2,
-    },
-    {
-      'question': 'Which planet is known as the Red Planet?',
-      'options': ['Venus', 'Mars', 'Jupiter', 'Saturn'],
-      'correctAnswer': 1,
-    },
-    {
-      'question': 'Who painted the Mona Lisa?',
-      'options': ['Van Gogh', 'Da Vinci', 'Picasso', 'Rembrandt'],
-      'correctAnswer': 1,
-    },
-  ];
+  List<Map<String, dynamic>> _questions = [];
+  bool _isLoading = true;
+  String? _error;
 
   @override
   void initState() {
     super.initState();
-    _userAnswers = List.filled(_questions.length, null);
-    _timeRemaining = _parseTimeLimit(widget.quiz['timeLimit']);
-    startTimer();
+    _loadQuizQuestions();
+  }
+
+  Future<void> _loadQuizQuestions() async {
+    try {
+      final quizData = await _apiService.getQuizById(widget.quiz['id']);
+      setState(() {
+        _questions = List<Map<String, dynamic>>.from(quizData['questions']);
+        _userAnswers = List.filled(_questions.length, null);
+        _timeRemaining = _parseTimeLimit(quizData['timeLimit']);
+        _isLoading = false;
+      });
+      startTimer();
+    } catch (e) {
+      setState(() {
+        _error = 'Failed to load quiz questions: $e';
+        _isLoading = false;
+      });
+    }
   }
 
   int _parseTimeLimit(dynamic timeLimit) {
     if (timeLimit is int) {
-      return timeLimit * 60; // Convert minutes to seconds
+      return timeLimit * 60;
     } else if (timeLimit is String) {
-      // Parse string like "15 min" to get the number of minutes
       final RegExp regex = RegExp(r'(\d+)');
       final match = regex.firstMatch(timeLimit);
       if (match != null) {
-        return int.parse(match.group(1)!) * 60; // Convert minutes to seconds
+        return int.parse(match.group(1)!) * 60;
       }
     }
-    return 600; // Default to 10 minutes if parsing fails
+    return 600;
   }
 
   void startTimer() {
@@ -106,11 +108,32 @@ class _QuizAttemptPageState extends State<QuizAttemptPage> {
     }
   }
 
-  void _completeQuiz() {
+  Future<void> _completeQuiz() async {
     _timer?.cancel();
     setState(() {
+      _isLoading = true;
       _quizCompleted = true;
     });
+
+    try {
+      await _apiService.submitQuizAttempt(
+        widget.quiz['id'],
+        _userAnswers.asMap().entries.map((entry) {
+          return {
+            'questionId': _questions[entry.key]['id'],
+            'answerId': entry.value,
+          };
+        }).toList(),
+      );
+      setState(() {
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = 'Failed to submit quiz attempt: $e';
+        _isLoading = false;
+      });
+    }
   }
 
   int _calculateScore() {
@@ -146,13 +169,19 @@ class _QuizAttemptPageState extends State<QuizAttemptPage> {
           ),
         ],
       ),
-      body: _quizCompleted ? _buildResultScreen() : _buildQuestionScreen(),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : _error != null
+              ? Center(child: Text(_error!))
+              : _quizCompleted
+                  ? _buildResultScreen()
+                  : _buildQuestionScreen(),
     );
   }
 
   Widget _buildQuestionScreen() {
     if (_currentQuestionIndex >= _questions.length) {
-      return Center(child: Text('No more questions available'));
+      return const Center(child: Text('No more questions available'));
     }
 
     final question = _questions[_currentQuestionIndex];
@@ -165,20 +194,20 @@ class _QuizAttemptPageState extends State<QuizAttemptPage> {
             'Question ${_currentQuestionIndex + 1} of ${_questions.length}',
             style: Theme.of(context).textTheme.titleLarge,
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           Text(
-            question['question'] as String? ?? 'No question available',
+            question['text'] as String? ?? 'No question available',
             style: Theme.of(context).textTheme.headlineSmall,
           ),
-          SizedBox(height: 24),
-          ...(question['options'] as List<String>? ?? []).asMap().entries.map((entry) {
+          const SizedBox(height: 24),
+          ...(question['options'] as List<dynamic>? ?? []).asMap().entries.map((entry) {
             final index = entry.key;
             final option = entry.value;
             return Padding(
               padding: const EdgeInsets.only(bottom: 8.0),
               child: ElevatedButton(
                 onPressed: () => _answerQuestion(index),
-                child: Text(option),
+                child: Text(option['text'] ?? ''),
               ),
             );
           }).toList(),

@@ -1,6 +1,7 @@
 package quiz
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -13,16 +14,17 @@ import (
 func (q *QuizHandler) Create(ctx *gin.Context) {
 	var req rest.CreateQuizRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
+		fmt.Println(err)
 		ctx.JSON(http.StatusBadRequest, gin.H {"error": err.Error()})
 		return
 	}
 
-	userId := ctx.MustGet("user_id").(uint)
+	userId := ctx.MustGet("userId").(float64)
 
 	quiz := models.Quiz {
-		UserId: userId,
+		UserId: uint(userId),
 		Title: req.Title,
-		Description: req.Descriptoin,
+		Description: req.Description,
 		TimeLimit: req.TimeLimit,
 	}
 
@@ -88,7 +90,6 @@ func (q *QuizHandler) Get(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, quiz)
 }
 
-
 func (q *QuizHandler) SubmitQuizAttempt(ctx *gin.Context) {
 	var req rest.QuizAttemptRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -96,7 +97,7 @@ func (q *QuizHandler) SubmitQuizAttempt(ctx *gin.Context) {
 		return
 	}
 
-	userId := ctx.MustGet("user_id").(uint)
+	userId := ctx.MustGet("userId").(float64)
 
 	_, err := q.ctx.QuizRepository.GetQuizByID(req.QuizID)
 	if err != nil {
@@ -105,7 +106,7 @@ func (q *QuizHandler) SubmitQuizAttempt(ctx *gin.Context) {
 	}
 
 	attempt := models.QuizAttempt {
-		UserID: userId,
+		UserID: uint(userId),
 		QuizID: req.QuizID,
 		CompletedAt: time.Now(),
 	}
@@ -153,9 +154,9 @@ func (q *QuizHandler) SubmitQuizAttempt(ctx *gin.Context) {
 		return
 	}
 
-	user, err := q.ctx.UserRepository.GetUserByID(userId)
+	user, err := q.ctx.UserRepository.GetUserByID(uint(userId))
 	if err != nil {
-		ctx.JSON(http.StatusNotFound, gin.H {"erro": "User not found"})
+		ctx.JSON(http.StatusNotFound, gin.H {"error": "User not found"})
 		return
 	}
 	user.TotalPoints += score

@@ -1,34 +1,86 @@
-import 'package:aaritya/presentation/pages/quiz_attempt_page.dart';
 import 'package:flutter/material.dart';
+import 'package:aaritya/core/network/api_service.dart';
+import 'package:aaritya/presentation/pages/quiz_attempt_page.dart';
 
-class QuizFeedPage extends StatelessWidget {
-  final List<Map<String, dynamic>> quizzes = [
-    {
-      'title': 'Science Trivia',
-      'creator': 'John Doe',
-      'difficulty': 'Medium',
-      'questionCount': 10,
-      'timeLimit': '15 min',
-      'attempts': 150,
-    },
-    {
-      'title': 'History Quiz',
-      'creator': 'Jane Smith',
-      'difficulty': 'Hard',
-      'questionCount': 15,
-      'timeLimit': '20 min',
-      'attempts': 89,
-    },
-    {
-      'title': 'Pop Culture Mania',
-      'creator': 'Alex Johnson',
-      'difficulty': 'Easy',
-      'questionCount': 20,
-      'timeLimit': '25 min',
-      'attempts': 275,
-    },
-    // Add more quiz data as needed
-  ];
+class QuizFeedPage extends StatefulWidget {
+  @override
+  _QuizFeedPageState createState() => _QuizFeedPageState();
+}
+
+class _QuizFeedPageState extends State<QuizFeedPage> {
+  final ApiService _apiService = ApiService();
+  List<Map<String, dynamic>> _quizzes = [];
+  bool _isLoading = false;
+  bool _hasError = false;
+  String? _errorMessage;
+  int _page = 1;
+  bool _hasMore = true;
+  int _pageSize = 10;
+  int _totalQuizzes = 0;
+
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadQuizzes();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
+      _loadQuizzes();
+    }
+  }
+
+  Future<void> _loadQuizzes() async {
+  if (_isLoading || !_hasMore) return;
+
+  setState(() {
+    _isLoading = true;
+    _hasError = false;
+    _errorMessage = null;
+  });
+
+  try {
+    print('Attempting to load quizzes: page $_page, pageSize $_pageSize');
+    final response = await _apiService.getQuizzes(page: _page, pageSize: _pageSize);
+    final newQuizzes = List<Map<String, dynamic>>.from(response['quizzes']);
+    print('Received ${newQuizzes.length} quizzes');
+
+    setState(() {
+      _quizzes.addAll(newQuizzes);
+      _isLoading = false;
+      _page++;
+      _totalQuizzes = response['total'];
+      _hasMore = _quizzes.length < _totalQuizzes;
+    });
+  } catch (e) {
+    print('Error loading quizzes: $e');
+    setState(() {
+      _isLoading = false;
+      _hasError = true;
+      _errorMessage = e.toString();
+    });
+  }
+}
+
+  Future<void> _refreshQuizzes() async {
+    setState(() {
+      _quizzes.clear();
+      _page = 1;
+      _hasMore = true;
+      _hasError = false;
+      _errorMessage = null;
+    });
+    await _loadQuizzes();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,12 +96,59 @@ class QuizFeedPage extends StatelessWidget {
           ),
         ],
       ),
-      body: ListView.builder(
-        itemCount: quizzes.length,
-        itemBuilder: (context, index) {
-          final quiz = quizzes[index];
-          return QuizCard(quiz: quiz);
-        },
+      body: RefreshIndicator(
+        onRefresh: _refreshQuizzes,
+        child: _hasError
+            ? _buildErrorDisplay()
+            : _quizzes.isEmpty && !_isLoading
+                ? _buildEmptyDisplay()
+                : ListView.builder(
+                    controller: _scrollController,
+                    itemCount: _quizzes.length + (_hasMore ? 1 : 0),
+                    itemBuilder: (context, index) {
+                      if (index == _quizzes.length) {
+                        return _isLoading
+                            ? Center(child: CircularProgressIndicator())
+                            : SizedBox.shrink();
+                      }
+                      final quiz = _quizzes[index];
+                      return QuizCard(quiz: quiz);
+                    },
+                  ),
+      ),
+    );
+  }
+
+  Widget _buildErrorDisplay() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            'Failed to load quizzes',
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          SizedBox(height: 16),
+          Text(
+            'Error: ${_errorMessage ?? "Unknown error"}',
+            style: TextStyle(color: Colors.red),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: _refreshQuizzes,
+            child: Text('Retry'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyDisplay() {
+    return Center(
+      child: Text(
+        'No quizzes available',
+        style: Theme.of(context).textTheme.headlineSmall,
       ),
     );
   }
@@ -69,18 +168,24 @@ class QuizCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              quiz['title'],
-              style: Theme.of(context).textTheme.headlineSmall,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    quiz['Title'] ?? 'Untitled Quiz',
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                ),
+                _buildDifficultyChip(quiz['Difficulty'] ?? 'Unknown'),
+              ],
             ),
             SizedBox(height: 8),
             Row(
               children: [
                 Icon(Icons.person, size: 16),
                 SizedBox(width: 4),
-                Text(quiz['creator']),
-                Spacer(),
-                _buildDifficultyChip(quiz['difficulty']),
+                Text('Created by User ${quiz['UserId'] ?? 'Unknown'}'),
               ],
             ),
             SizedBox(height: 8),
@@ -88,21 +193,31 @@ class QuizCard extends StatelessWidget {
               children: [
                 Icon(Icons.question_answer, size: 16),
                 SizedBox(width: 4),
-                Text('${quiz['questionCount']} questions'),
+                Text('${(quiz['Questions'] as List?)?.length ?? 0} questions'),
                 Spacer(),
                 Icon(Icons.timer, size: 16),
                 SizedBox(width: 4),
-                Text(quiz['timeLimit']),
+                Text('${quiz['TimeLimit'] ?? 'Unknown'} minutes'),
               ],
             ),
             SizedBox(height: 8),
             Row(
               children: [
-                Icon(Icons.people, size: 16),
+                Icon(Icons.star, size: 16),
                 SizedBox(width: 4),
-                Text('${quiz['attempts']} attempts'),
+                Text('${quiz['TotalPoints'] ?? 0} points'),
               ],
             ),
+            if (quiz['Topics'] != null && (quiz['Topics'] as List).isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Wrap(
+                  spacing: 8,
+                  children: (quiz['Topics'] as List).map((topic) => 
+                    Chip(label: Text(topic['TopicName'] ?? 'Unknown Topic'))
+                  ).toList(),
+                ),
+              ),
             SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
@@ -138,7 +253,6 @@ class QuizCard extends StatelessWidget {
       default:
         color = Colors.grey;
     }
-
     return Chip(
       label: Text(
         difficulty,

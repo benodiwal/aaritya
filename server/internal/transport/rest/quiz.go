@@ -1,11 +1,12 @@
 package rest
 
 type CreateQuizRequest struct {
-	Title string `json:"title" binding:"required"`
-	Descriptoin string `json:"description"`
-	TimeLimit int `json:"timeLimit" binding:"required"`
-	Questions []QuestionRequest `json:"questions" binding:"required,min=1"`
-	Topics []string `json:"topics"`
+    Title       string            `json:"title" binding:"required"`
+    Description string            `json:"description"`
+    TimeLimit   int               `json:"timeLimit" binding:"required"`
+    Difficulty  string            `json:"difficulty" binding:"required,oneof=Easy Medium Hard"`
+    Questions   []QuestionRequest `json:"questions" binding:"required,min=1"`
+    Topics      []string          `json:"topics"`
 }
 
 type QuestionRequest struct {
