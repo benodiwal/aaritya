@@ -48,15 +48,15 @@ class _QuizAttemptPageState extends State<QuizAttemptPage> {
 
   int _parseTimeLimit(dynamic timeLimit) {
     if (timeLimit is int) {
-      return timeLimit * 60; // Convert minutes to seconds
+      return timeLimit * 60;
     } else if (timeLimit is String) {
       final RegExp regex = RegExp(r'(\d+)');
       final match = regex.firstMatch(timeLimit);
       if (match != null) {
-        return int.parse(match.group(1)!) * 60; // Convert minutes to seconds
+        return int.parse(match.group(1)!) * 60;
       }
     }
-    return 600; // Default to 10 minutes if parsing fails
+    return 600;
   }
 
   void startTimer() {
@@ -181,7 +181,7 @@ class _QuizAttemptPageState extends State<QuizAttemptPage> {
 
   Widget _buildQuestionScreen() {
     if (_currentQuestionIndex >= _questions.length) {
-      return Center(child: Text('No more questions available'));
+      return const Center(child: Text('No more questions available'));
     }
 
     final question = _questions[_currentQuestionIndex];
@@ -194,12 +194,12 @@ class _QuizAttemptPageState extends State<QuizAttemptPage> {
             'Question ${_currentQuestionIndex + 1} of ${_questions.length}',
             style: Theme.of(context).textTheme.titleLarge,
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           Text(
             question['text'] as String? ?? 'No question available',
             style: Theme.of(context).textTheme.headlineSmall,
           ),
-          SizedBox(height: 24),
+          const SizedBox(height: 24),
           ...(question['options'] as List<dynamic>? ?? []).asMap().entries.map((entry) {
             final index = entry.key;
             final option = entry.value;
