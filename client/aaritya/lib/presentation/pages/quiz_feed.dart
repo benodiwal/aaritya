@@ -1,5 +1,5 @@
-import 'package:aaritya/core/network/api_service.dart';
 import 'package:flutter/material.dart';
+import 'package:aaritya/core/network/api_service.dart';
 import 'package:aaritya/presentation/pages/quiz_attempt_page.dart';
 
 class QuizFeedPage extends StatefulWidget {
@@ -12,6 +12,7 @@ class _QuizFeedPageState extends State<QuizFeedPage> {
   List<Map<String, dynamic>> _quizzes = [];
   bool _isLoading = false;
   bool _hasError = false;
+  String? _errorMessage;
   int _page = 1;
   bool _hasMore = true;
   final int _pageSize = 10;
@@ -32,7 +33,8 @@ class _QuizFeedPageState extends State<QuizFeedPage> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
+    if (_scrollController.position.pixels ==
+        _scrollController.position.maxScrollExtent) {
       _loadQuizzes();
     }
   }
@@ -43,10 +45,15 @@ class _QuizFeedPageState extends State<QuizFeedPage> {
     setState(() {
       _isLoading = true;
       _hasError = false;
+      _errorMessage = null;
     });
 
     try {
-      final newQuizzes = await _apiService.getQuizzes(page: _page, pageSize: _pageSize);
+      print('Attempting to load quizzes: page $_page, pageSize $_pageSize');
+      final newQuizzes =
+          await _apiService.getQuizzes(page: _page, pageSize: _pageSize);
+      print('Received ${newQuizzes.length} quizzes');
+
       setState(() {
         _quizzes.addAll(newQuizzes);
         _isLoading = false;
@@ -54,9 +61,11 @@ class _QuizFeedPageState extends State<QuizFeedPage> {
         _hasMore = newQuizzes.length == _pageSize;
       });
     } catch (e) {
+      print('Error loading quizzes: $e');
       setState(() {
         _isLoading = false;
         _hasError = true;
+        _errorMessage = e.toString();
       });
     }
   }
@@ -66,6 +75,8 @@ class _QuizFeedPageState extends State<QuizFeedPage> {
       _quizzes.clear();
       _page = 1;
       _hasMore = true;
+      _hasError = false;
+      _errorMessage = null;
     });
     await _loadQuizzes();
   }
@@ -87,31 +98,56 @@ class _QuizFeedPageState extends State<QuizFeedPage> {
       body: RefreshIndicator(
         onRefresh: _refreshQuizzes,
         child: _hasError
-            ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text('Failed to load quizzes'),
-                    ElevatedButton(
-                      onPressed: _loadQuizzes,
-                      child: Text('Retry'),
-                    ),
-                  ],
-                ),
-              )
-            : ListView.builder(
-                controller: _scrollController,
-                itemCount: _quizzes.length + (_hasMore ? 1 : 0),
-                itemBuilder: (context, index) {
-                  if (index == _quizzes.length) {
-                    return _isLoading
-                        ? Center(child: CircularProgressIndicator())
-                        : SizedBox.shrink();
-                  }
-                  final quiz = _quizzes[index];
-                  return QuizCard(quiz: quiz);
-                },
-              ),
+            ? _buildErrorDisplay()
+            : _quizzes.isEmpty && !_isLoading
+                ? _buildEmptyDisplay()
+                : ListView.builder(
+                    controller: _scrollController,
+                    itemCount: _quizzes.length + (_hasMore ? 1 : 0),
+                    itemBuilder: (context, index) {
+                      if (index == _quizzes.length) {
+                        return _isLoading
+                            ? Center(child: CircularProgressIndicator())
+                            : SizedBox.shrink();
+                      }
+                      final quiz = _quizzes[index];
+                      return QuizCard(quiz: quiz);
+                    },
+                  ),
+      ),
+    );
+  }
+
+  Widget _buildErrorDisplay() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            'Failed to load quizzes',
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          SizedBox(height: 16),
+          Text(
+            'Error: ${_errorMessage ?? "Unknown error"}',
+            style: TextStyle(color: Colors.red),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: _refreshQuizzes,
+            child: Text('Retry'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyDisplay() {
+    return Center(
+      child: Text(
+        'No quizzes available',
+        style: Theme.of(context).textTheme.headlineSmall,
       ),
     );
   }
@@ -124,6 +160,8 @@ class QuizCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print(quiz);
+
     return Card(
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Padding(
@@ -131,18 +169,24 @@ class QuizCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              quiz['title'],
-              style: Theme.of(context).textTheme.headlineSmall,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    quiz['Title'] ?? 'Untitled Quiz',
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                ),
+                _buildDifficultyChip(quiz['Difficulty'] ?? 'Unknown'),
+              ],
             ),
             SizedBox(height: 8),
             Row(
               children: [
                 Icon(Icons.person, size: 16),
                 SizedBox(width: 4),
-                Text(quiz['creator']),
-                Spacer(),
-                _buildDifficultyChip(quiz['difficulty']),
+                Text(quiz['Creator'] ?? 'Unknown Creator'),
               ],
             ),
             SizedBox(height: 8),
@@ -150,11 +194,11 @@ class QuizCard extends StatelessWidget {
               children: [
                 Icon(Icons.question_answer, size: 16),
                 SizedBox(width: 4),
-                Text('${quiz['questionCount']} questions'),
+                Text('${quiz['questionCount'] ?? 0} questions'),
                 Spacer(),
                 Icon(Icons.timer, size: 16),
                 SizedBox(width: 4),
-                Text('${quiz['timeLimit']} min'),
+                Text(quiz['timeLimit']?.toString() ?? 'Unknown'),
               ],
             ),
             SizedBox(height: 8),
@@ -162,7 +206,7 @@ class QuizCard extends StatelessWidget {
               children: [
                 Icon(Icons.people, size: 16),
                 SizedBox(width: 4),
-                Text('${quiz['attempts']} attempts'),
+                Text('${quiz['attempts'] ?? 0} attempts'),
               ],
             ),
             SizedBox(height: 16),

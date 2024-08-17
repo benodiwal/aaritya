@@ -30,8 +30,7 @@ func IsAuthenticated() gin.HandlerFunc {
 			return
 		}
 
-		c.Set("userID", claims["user_id"])
-
+		c.Set("userId", claims["user_id"])
 		c.Next()
 	}
 }

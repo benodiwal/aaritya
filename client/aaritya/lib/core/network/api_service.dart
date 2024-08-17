@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 
 class ApiService {
   final _storage = const FlutterSecureStorage();
-  static const String baseUrl = 'https://localhost:8000';
+  static const String baseUrl = 'https://6997-36-255-84-98.ngrok-free.app';
 
   Future<Map<String, String>> _getHeaders() async {
     final token = await _storage.read(key: Keys.jwtTokenKey);
@@ -35,7 +35,8 @@ class ApiService {
     final response = await http.post(
       Uri.parse('$baseUrl/auth/signup'),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'username': username, 'email': email, 'password': password}),
+      body: jsonEncode(
+          {'username': username, 'email': email, 'password': password}),
     );
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -110,17 +111,29 @@ class ApiService {
     }
   }
 
-  Future<List<Map<String, dynamic>>> getQuizzes({int page = 1, int pageSize = 10}) async {
-    final response = await http.get(
-      Uri.parse('$baseUrl/quiz?page=$page&pageSize=$pageSize'),
-      headers: await _getHeaders(),
-    );
+   Future<List<Map<String, dynamic>>> getQuizzes({required int page, required int pageSize}) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/quiz?page=$page&pageSize=$pageSize'),
+        headers: await _getHeaders(),
+      );
 
-    if (response.statusCode == 200) {
-      final List<dynamic> quizzes = jsonDecode(response.body);
-      return quizzes.cast<Map<String, dynamic>>();
-    } else {
-      throw Exception('Failed to get quizzes');
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(response.body);
+        
+        if (data.containsKey('quizzes') && data['quizzes'] is List) {
+          return (data['quizzes'] as List).cast<Map<String, dynamic>>();
+        } else {
+          print('Unexpected data structure: ${response.body}');
+          throw Exception('Unexpected data structure');
+        }
+      } else {
+        print('API Error: ${response.statusCode} - ${response.body}');
+        throw Exception('Failed to load quizzes: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Network Error: $e');
+      throw Exception('Network error occurred: $e');
     }
   }
 
@@ -138,7 +151,8 @@ class ApiService {
     }
   }
 
-  Future<bool> submitQuizAttempt(String quizId, List<Map<String, dynamic>> answers) async {
+  Future<bool> submitQuizAttempt(
+      String quizId, List<Map<String, dynamic>> answers) async {
     final response = await http.post(
       Uri.parse('$baseUrl/quiz-attempt'),
       headers: await _getHeaders(),

@@ -9,6 +9,7 @@ type Quiz struct {
 	Description string
 	TimeLimit int
 	TotalPoints int
+	Difficulty string
 	Questions   []Question
 	Topics      []Topic `gorm:"many2many:quiz_topics;"`
 	Attempts    []QuizAttempt

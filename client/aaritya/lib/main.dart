@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Aaritya',
       debugShowCheckedModeBanner: false,
-      initialRoute: !isAuthenticated ? '/home' : '/login',
+      initialRoute: isAuthenticated ? '/home' : '/login',
       onGenerateRoute: AppRoutes.generateRoute,
     );
   }

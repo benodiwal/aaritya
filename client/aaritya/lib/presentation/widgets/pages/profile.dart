@@ -61,11 +61,11 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   SizedBox(height: 10),
                   Text(
-                    _profileData?['username'] ?? 'Unknown User',
+                    _profileData?['Username'] ?? 'Unknown User',
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
                   Text(
-                    _profileData?['email'] ?? 'No email',
+                    _profileData?['Email'] ?? 'No email',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   SizedBox(height: 20),
@@ -88,11 +88,15 @@ class _ProfilePageState extends State<ProfilePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Personal Information', style: Theme.of(context).textTheme.headlineSmall),
+            Text('Personal Information',
+                style: Theme.of(context).textTheme.headlineSmall),
             SizedBox(height: 10),
-            _buildInfoRow(Icons.cake, 'Birthday', _profileData?['birthday'] ?? 'Not set'),
-            _buildInfoRow(Icons.location_on, 'Location', _profileData?['location'] ?? 'Not set'),
-            _buildInfoRow(Icons.school, 'Education', _profileData?['education'] ?? 'Not set'),
+            _buildInfoRow(
+                Icons.cake, 'Birthday', _profileData?['birthday'] ?? 'Not set'),
+            _buildInfoRow(Icons.location_on, 'Location',
+                _profileData?['location'] ?? 'Not set'),
+            _buildInfoRow(Icons.school, 'Education',
+                _profileData?['education'] ?? 'Not set'),
           ],
         ),
       ),
@@ -131,9 +135,12 @@ class _ProfilePageState extends State<ProfilePage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildStat('Quizzes Taken', _profileData?['quizzesTaken']?.toString() ?? '0'),
-                _buildStat('Avg. Score', '${_profileData?['avgScore']?.toStringAsFixed(1) ?? '0'}%'),
-                _buildStat('Rank', '#${_profileData?['rank']?.toString() ?? 'N/A'}'),
+                _buildStat('Quizzes Taken',
+                    _profileData?['quizzesTaken']?.toString() ?? '0'),
+                _buildStat('Avg. Score',
+                    '${_profileData?['avgScore']?.toStringAsFixed(1) ?? '0'}%'),
+                _buildStat(
+                    'Rank', '#${_profileData?['rank']?.toString() ?? 'N/A'}'),
               ],
             ),
           ],
@@ -145,15 +152,17 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _buildStat(String label, String value) {
     return Column(
       children: [
-        Text(value, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+        Text(value,
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
         Text(label, style: TextStyle(fontSize: 12, color: Colors.grey)),
       ],
     );
   }
 
   Widget _buildRecentActivityCard(BuildContext context) {
-    List<Map<String, dynamic>> recentActivities = _profileData?['recentActivities'] ?? [];
-    
+    List<Map<String, dynamic>> recentActivities =
+        _profileData?['recentActivities'] ?? [];
+
     return Card(
       margin: EdgeInsets.symmetric(horizontal: 16),
       child: Padding(
@@ -161,11 +170,13 @@ class _ProfilePageState extends State<ProfilePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Recent Activity', style: Theme.of(context).textTheme.headlineSmall),
+            Text('Recent Activity',
+                style: Theme.of(context).textTheme.headlineSmall),
             SizedBox(height: 10),
-            ...recentActivities.map((activity) => 
-              _buildActivityItem(activity['description'], activity['time'])
-            ).toList(),
+            ...recentActivities
+                .map((activity) => _buildActivityItem(
+                    activity['description'], activity['time']))
+                .toList(),
           ],
         ),
       ),
