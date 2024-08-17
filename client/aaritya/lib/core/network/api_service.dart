@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 
 class ApiService {
   final _storage = const FlutterSecureStorage();
-  static const String baseUrl = 'https://6997-36-255-84-98.ngrok-free.app';
+  static const String baseUrl = 'https://d676-36-255-84-98.ngrok-free.app ';
 
   Future<Map<String, String>> _getHeaders() async {
     final token = await _storage.read(key: Keys.jwtTokenKey);
@@ -111,22 +111,16 @@ class ApiService {
     }
   }
 
-   Future<List<Map<String, dynamic>>> getQuizzes({required int page, required int pageSize}) async {
+    Future<Map<String, dynamic>> getQuizzes({required int page, required int pageSize}) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/quiz?page=$page&pageSize=$pageSize'),
+        Uri.parse('$baseUrl/quizzes?page=$page&pageSize=$pageSize'),
         headers: await _getHeaders(),
       );
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
-        
-        if (data.containsKey('quizzes') && data['quizzes'] is List) {
-          return (data['quizzes'] as List).cast<Map<String, dynamic>>();
-        } else {
-          print('Unexpected data structure: ${response.body}');
-          throw Exception('Unexpected data structure');
-        }
+        return data;
       } else {
         print('API Error: ${response.statusCode} - ${response.body}');
         throw Exception('Failed to load quizzes: ${response.statusCode}');

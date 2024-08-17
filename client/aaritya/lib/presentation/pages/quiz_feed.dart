@@ -15,7 +15,8 @@ class _QuizFeedPageState extends State<QuizFeedPage> {
   String? _errorMessage;
   int _page = 1;
   bool _hasMore = true;
-  final int _pageSize = 10;
+  int _pageSize = 10;
+  int _totalQuizzes = 0;
 
   final ScrollController _scrollController = ScrollController();
 
@@ -33,42 +34,42 @@ class _QuizFeedPageState extends State<QuizFeedPage> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels ==
-        _scrollController.position.maxScrollExtent) {
+    if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
       _loadQuizzes();
     }
   }
 
   Future<void> _loadQuizzes() async {
-    if (_isLoading || !_hasMore) return;
+  if (_isLoading || !_hasMore) return;
+
+  setState(() {
+    _isLoading = true;
+    _hasError = false;
+    _errorMessage = null;
+  });
+
+  try {
+    print('Attempting to load quizzes: page $_page, pageSize $_pageSize');
+    final response = await _apiService.getQuizzes(page: _page, pageSize: _pageSize);
+    final newQuizzes = List<Map<String, dynamic>>.from(response['quizzes']);
+    print('Received ${newQuizzes.length} quizzes');
 
     setState(() {
-      _isLoading = true;
-      _hasError = false;
-      _errorMessage = null;
+      _quizzes.addAll(newQuizzes);
+      _isLoading = false;
+      _page++;
+      _totalQuizzes = response['total'];
+      _hasMore = _quizzes.length < _totalQuizzes;
     });
-
-    try {
-      print('Attempting to load quizzes: page $_page, pageSize $_pageSize');
-      final newQuizzes =
-          await _apiService.getQuizzes(page: _page, pageSize: _pageSize);
-      print('Received ${newQuizzes.length} quizzes');
-
-      setState(() {
-        _quizzes.addAll(newQuizzes);
-        _isLoading = false;
-        _page++;
-        _hasMore = newQuizzes.length == _pageSize;
-      });
-    } catch (e) {
-      print('Error loading quizzes: $e');
-      setState(() {
-        _isLoading = false;
-        _hasError = true;
-        _errorMessage = e.toString();
-      });
-    }
+  } catch (e) {
+    print('Error loading quizzes: $e');
+    setState(() {
+      _isLoading = false;
+      _hasError = true;
+      _errorMessage = e.toString();
+    });
   }
+}
 
   Future<void> _refreshQuizzes() async {
     setState(() {
@@ -160,8 +161,6 @@ class QuizCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print(quiz);
-
     return Card(
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Padding(
@@ -186,7 +185,7 @@ class QuizCard extends StatelessWidget {
               children: [
                 Icon(Icons.person, size: 16),
                 SizedBox(width: 4),
-                Text(quiz['Creator'] ?? 'Unknown Creator'),
+                Text('Created by User ${quiz['UserId'] ?? 'Unknown'}'),
               ],
             ),
             SizedBox(height: 8),
@@ -194,21 +193,31 @@ class QuizCard extends StatelessWidget {
               children: [
                 Icon(Icons.question_answer, size: 16),
                 SizedBox(width: 4),
-                Text('${quiz['questionCount'] ?? 0} questions'),
+                Text('${(quiz['Questions'] as List?)?.length ?? 0} questions'),
                 Spacer(),
                 Icon(Icons.timer, size: 16),
                 SizedBox(width: 4),
-                Text(quiz['timeLimit']?.toString() ?? 'Unknown'),
+                Text('${quiz['TimeLimit'] ?? 'Unknown'} minutes'),
               ],
             ),
             SizedBox(height: 8),
             Row(
               children: [
-                Icon(Icons.people, size: 16),
+                Icon(Icons.star, size: 16),
                 SizedBox(width: 4),
-                Text('${quiz['attempts'] ?? 0} attempts'),
+                Text('${quiz['TotalPoints'] ?? 0} points'),
               ],
             ),
+            if (quiz['Topics'] != null && (quiz['Topics'] as List).isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Wrap(
+                  spacing: 8,
+                  children: (quiz['Topics'] as List).map((topic) => 
+                    Chip(label: Text(topic['TopicName'] ?? 'Unknown Topic'))
+                  ).toList(),
+                ),
+              ),
             SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
