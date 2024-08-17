@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:aaritya/core/network/api_service.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -10,6 +14,8 @@ class _ProfilePageState extends State<ProfilePage> {
   final ApiService _apiService = ApiService();
   Map<String, dynamic>? _profileData;
   bool _isLoading = true;
+  File? _image;
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -35,6 +41,26 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  Future<void> _pickImage() async {
+  final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+  if (pickedFile != null) {
+    setState(() {
+      _image = File(pickedFile.path);
+    });
+    try {
+      await _apiService.uploadProfileImage(_image!);
+      await _loadProfileData(); // Reload profile data to get new image URL
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Profile image updated successfully')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to upload image: ${e.toString()}')),
+      );
+    }
+  }
+}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -55,9 +81,25 @@ class _ProfilePageState extends State<ProfilePage> {
               child: Column(
                 children: [
                   SizedBox(height: 20),
-                  CircleAvatar(
-                    radius: 50,
-                    backgroundImage: AssetImage('assets/profile_picture.jpg'),
+                  GestureDetector(
+                    onTap: _pickImage,
+                    child: CircleAvatar(
+                      radius: 50,
+                      backgroundImage:
+                          _image != null
+                              ? FileImage(_image!)
+                              : (_profileData?['profileImageUrl'] != null
+                                      ? NetworkImage(
+                                          _profileData!['profileImageUrl'])
+                                      : AssetImage(
+                                          'assets/default_profile_picture.jpg'))
+                                  as ImageProvider,
+                      child: _image == null &&
+                              _profileData?['profileImageUrl'] == null
+                          ? Icon(Icons.add_a_photo,
+                              size: 30, color: Colors.white)
+                          : null,
+                    ),
                   ),
                   SizedBox(height: 10),
                   Text(

@@ -1,7 +1,9 @@
 package user
 
 import (
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -65,4 +67,18 @@ func (u *UserHandler) Average(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, total)
+}
+
+
+func (u *UserHandler) UploadProfileImage(ctx *gin.Context) {
+	userId := ctx.MustGet("userId").(float64)
+	key := fmt.Sprintf("profile-image/%d.jpg", userId)
+
+	url, err := u.s3Service.GeneratePresignedURL(key, "image/jpeg", 15*time.Minute)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate upload URL"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"uploadUrl": url})
 }

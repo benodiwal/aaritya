@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:aaritya/core/constants/keys.dart';
 import 'package:aaritya/core/utils/jwt_helper.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
@@ -111,10 +113,11 @@ class ApiService {
     }
   }
 
-    Future<Map<String, dynamic>> getQuizzes({required int page, required int pageSize}) async {
+  Future<Map<String, dynamic>> getQuizzes(
+      {required int page, required int pageSize}) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/quizzes?page=$page&pageSize=$pageSize'),
+        Uri.parse('$baseUrl/quiz?page=$page&pageSize=$pageSize'),
         headers: await _getHeaders(),
       );
 
@@ -176,4 +179,26 @@ class ApiService {
       throw Exception('Failed to get leaderboard');
     }
   }
+
+    Future<void> uploadProfileImage(File imageFile) async {
+    try {
+      String fileName = imageFile.path.split('/').last;
+      FormData formData = FormData.fromMap({
+        "file": await MultipartFile.fromFile(imageFile.path, filename: fileName),
+      });
+
+      Response response = await Dio().post(
+        "$baseUrl/user/upload-profile-image",
+        data: formData,
+        options: Options(headers: await _getHeaders()),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to upload image');
+      }
+    } catch (e) {
+      throw Exception('Error uploading image: $e');
+    }
+  }
+  
 }

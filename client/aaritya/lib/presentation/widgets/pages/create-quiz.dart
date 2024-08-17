@@ -124,6 +124,8 @@ class _CreateQuizPageState extends State<CreateQuizPage> {
                     initialValue: _topics.join(', '),
                   ),
                   SizedBox(height: 20),
+                  _buildOpenAIGeneratorCard(),
+                  SizedBox(height: 20),
                   Text('Questions', style: Theme.of(context).textTheme.headlineSmall),
                   ..._questions.asMap().entries.map((entry) {
                     int index = entry.key;
@@ -305,4 +307,58 @@ class _CreateQuizPageState extends State<CreateQuizPage> {
       );
     }
   }
+}
+
+
+Widget _buildOpenAIGeneratorCard() {
+  return Card(
+    elevation: 8,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+    child: Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.blue.shade400, Colors.purple.shade400],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.auto_awesome, color: Colors.white, size: 30),
+                SizedBox(width: 10),
+                Text(
+                  'Generate Questions using OpenAI',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 10),
+            Text(
+              'Coming Soon!',
+              style: TextStyle(
+                color: Colors.yellow,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            SizedBox(height: 10),
+            Text(
+              'Automatically generate quiz questions using advanced AI technology.',
+              style: TextStyle(color: Colors.white70),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
 }
