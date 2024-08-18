@@ -17,7 +17,6 @@ func (q *QuizHandler) RegisterRoutes() {
 	quiz.GET("/", q.GetQuizzes)
 	quiz.POST("", q.Create)
 	quiz.GET("/:id", q.Get)
-	// quiz.GET("/topic/:topicId", q.GetQuizzesByTopic)
 }
 
 func New(router *gin.Engine, ctx *repositories.Context) *QuizHandler {

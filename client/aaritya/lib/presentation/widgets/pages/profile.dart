@@ -1,9 +1,10 @@
 import 'dart:io';
 
 import 'package:aaritya/core/network/api_service.dart';
-import 'package:dio/dio.dart';
+import 'package:aaritya/main.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -42,24 +43,25 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _pickImage() async {
-  final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-  if (pickedFile != null) {
-    setState(() {
-      _image = File(pickedFile.path);
-    });
-    try {
-      await _apiService.uploadProfileImage(_image!);
-      await _loadProfileData(); // Reload profile data to get new image URL
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Profile image updated successfully')),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to upload image: ${e.toString()}')),
-      );
+    final XFile? pickedFile =
+        await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _image = File(pickedFile.path);
+      });
+      try {
+        await _apiService.uploadProfileImage(_image!);
+        await _loadProfileData(); // Reload profile data to get new image URL
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Profile image updated successfully')),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to upload image: ${e.toString()}')),
+        );
+      }
     }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -73,6 +75,20 @@ class _ProfilePageState extends State<ProfilePage> {
               // TODO: Navigate to settings page
             },
           ),
+          IconButton(
+              onPressed: () async {
+                try {
+                  await _apiService.logout();
+                  Provider.of<AuthenticationState>(context, listen: false).setAuthenticated(false);
+                  Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+                } catch (e) {
+                  print('Error during logout: $e');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                   SnackBar(content: Text('Failed to logout. Please try again.')),
+                );
+                }
+              },
+              icon: Icon(Icons.logout))
         ],
       ),
       body: _isLoading

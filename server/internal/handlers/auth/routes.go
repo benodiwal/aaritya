@@ -91,8 +91,21 @@ func (h *AuthHandler) Signup(ctx *gin.Context) {
 		return
 	}
 
+	claims := jwt.MapClaims{
+		"user_id": newUser.ID,
+		"exp":     time.Now().Add(time.Hour * 24).Unix(),
+	}
+
+	token, err := libs.SignJwt(claims)
+	if err != nil {
+		log.Println(err)
+		ctx.JSON(http.StatusInternalServerError, gin.H { "error": "Unable to generate JWT" })
+		return
+	}
+
 	ctx.JSON(http.StatusOK, gin.H {
 		"message": "Signup successful",
-		"user": newUser.WithoutPassword(), 
+		"user": newUser.WithoutPassword(),
+		"token": token,
 	})
 }

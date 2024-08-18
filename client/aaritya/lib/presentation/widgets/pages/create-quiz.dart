@@ -309,56 +309,66 @@ class _CreateQuizPageState extends State<CreateQuizPage> {
   }
 }
 
-
 Widget _buildOpenAIGeneratorCard() {
-  return Card(
-    elevation: 8,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-    child: Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.blue.shade400, Colors.purple.shade400],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+  return LayoutBuilder(
+    builder: (BuildContext context, BoxConstraints constraints) {
+      final isSmallScreen = constraints.maxWidth < 600;
+
+      return Card(
+        elevation: 8,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.blue.shade400, Colors.purple.shade400],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: Padding(
+            padding: EdgeInsets.all(isSmallScreen ? 12.0 : 16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.auto_awesome, color: Colors.white, size: 30),
-                SizedBox(width: 10),
+                Row(
+                  children: [
+                    Icon(Icons.auto_awesome, color: Colors.white, size: isSmallScreen ? 24 : 30),
+                    SizedBox(width: isSmallScreen ? 8 : 10),
+                    Expanded(
+                      child: Text(
+                        'Generate Questions using OpenAI',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: isSmallScreen ? 16 : 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: isSmallScreen ? 8 : 10),
                 Text(
-                  'Generate Questions using OpenAI',
+                  'Coming Soon!',
                   style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                    color: Colors.yellow,
+                    fontSize: isSmallScreen ? 14 : 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                SizedBox(height: isSmallScreen ? 8 : 10),
+                Text(
+                  'Automatically generate quiz questions using advanced AI technology.',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: isSmallScreen ? 12 : 14,
                   ),
                 ),
               ],
             ),
-            SizedBox(height: 10),
-            Text(
-              'Coming Soon!',
-              style: TextStyle(
-                color: Colors.yellow,
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            SizedBox(height: 10),
-            Text(
-              'Automatically generate quiz questions using advanced AI technology.',
-              style: TextStyle(color: Colors.white70),
-            ),
-          ],
+          ),
         ),
-      ),
-    ),
+      );
+    },
   );
 }

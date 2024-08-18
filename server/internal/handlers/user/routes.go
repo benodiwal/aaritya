@@ -72,7 +72,7 @@ func (u *UserHandler) Average(ctx *gin.Context) {
 
 func (u *UserHandler) UploadProfileImage(ctx *gin.Context) {
 	userId := ctx.MustGet("userId").(float64)
-	key := fmt.Sprintf("profile-image/%d.jpg", userId)
+	key := fmt.Sprintf("profile-image/%f.jpg", userId)
 
 	url, err := u.s3Service.GeneratePresignedURL(key, "image/jpeg", 15*time.Minute)
 	if err != nil {
