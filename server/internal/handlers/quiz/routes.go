@@ -26,12 +26,15 @@ func (q *QuizHandler) Create(ctx *gin.Context) {
 		Title: req.Title,
 		Description: req.Description,
 		TimeLimit: req.TimeLimit,
+		Difficulty: req.Difficulty,
 	}
 
 	if err := q.ctx.QuizRepository.CreateQuiz(&quiz); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H {"error": "Failed to create quiz"})
 		return
 	}
+
+	totalPoints := 0
 
 	for _, ques := range req.Questions {
 		question := models.Question {
@@ -44,7 +47,10 @@ func (q *QuizHandler) Create(ctx *gin.Context) {
 			return
 		}
 
-		for _, o := range question.Options {
+		totalPoints += ques.Points
+
+		for _, o := range ques.Options {
+			fmt.Println(o)
 			option := models.Option {
 				QuestionID: question.ID,
 				OptionText: o.OptionText,
@@ -54,6 +60,27 @@ func (q *QuizHandler) Create(ctx *gin.Context) {
 				ctx.JSON(http.StatusInternalServerError, gin.H {"error": "Failed to create option"})
 				return
 			}
+		}
+	}
+
+	quiz.TotalPoints = totalPoints
+	if err := q.ctx.QuizRepository.UpdateQuiz(&quiz); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update quiz with total points"})
+		return
+	}
+
+	for _, topicName := range req.Topics {
+		topic := models.Topic{
+			TopicName: topicName,
+		}
+		if err := q.ctx.TopicRepository.CreateTopic(&topic); err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create topic"})
+			return
+		}
+
+		if err := q.ctx.QuizRepository.AddTopicToQuiz(&quiz, &topic); err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to associate topic with quiz"})
+			return
 		}
 	}
 
@@ -93,6 +120,7 @@ func (q *QuizHandler) Get(ctx *gin.Context) {
 func (q *QuizHandler) SubmitQuizAttempt(ctx *gin.Context) {
 	var req rest.QuizAttemptRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
+		fmt.Println(err)
 		ctx.JSON(http.StatusBadRequest, gin.H {"error": err.Error()})
 		return
 	}

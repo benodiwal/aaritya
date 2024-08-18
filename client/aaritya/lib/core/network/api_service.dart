@@ -8,7 +8,7 @@ import 'package:http/http.dart' as http;
 
 class ApiService {
   final _storage = const FlutterSecureStorage();
-  static const String baseUrl = 'https://bec9-36-255-84-98.ngrok-free.app';
+  static const String baseUrl = 'https://9b69-36-255-84-98.ngrok-free.app';
 
   Future<Map<String, String>> _getHeaders() async {
     final token = await _storage.read(key: Keys.jwtTokenKey);
@@ -135,7 +135,7 @@ class ApiService {
   }
 
   Future<bool> createQuiz(Map<String, dynamic> quizData) async {
-    print("ApiService: Attempting to create quiz"); // Debug print
+    print("ApiService: Attempting to create quiz");
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/quiz'),
@@ -143,13 +143,15 @@ class ApiService {
         body: jsonEncode(quizData),
       );
 
-      print("ApiService: Received response with status code: ${response.statusCode}");
+      print(
+          "ApiService: Received response with status code: ${response.statusCode}");
 
       if (response.statusCode == 201) {
         print("ApiService: Quiz created successfully");
         return true;
       } else {
-        print("ApiService: Failed to create quiz. Response body: ${response.body}");
+        print(
+            "ApiService: Failed to create quiz. Response body: ${response.body}");
         return false;
       }
     } catch (e) {
@@ -159,9 +161,9 @@ class ApiService {
   }
 
   Future<bool> submitQuizAttempt(
-      String quizId, List<Map<String, dynamic>> answers) async {
+    int quizId, List<Map<String, dynamic>> answers) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/quiz-attempt'),
+      Uri.parse('$baseUrl/quiz/attempt'),
       headers: await _getHeaders(),
       body: jsonEncode({
         'quizId': quizId,
@@ -190,11 +192,12 @@ class ApiService {
     }
   }
 
-    Future<void> uploadProfileImage(File imageFile) async {
+  Future<void> uploadProfileImage(File imageFile) async {
     try {
       String fileName = imageFile.path.split('/').last;
       FormData formData = FormData.fromMap({
-        "file": await MultipartFile.fromFile(imageFile.path, filename: fileName),
+        "file":
+            await MultipartFile.fromFile(imageFile.path, filename: fileName),
       });
 
       Response response = await Dio().post(
@@ -210,5 +213,4 @@ class ApiService {
       throw Exception('Error uploading image: $e');
     }
   }
-  
 }

@@ -29,7 +29,7 @@ func (r *QuizRepository) GetQuizzes(page, pageSize int) ([]models.Quiz, int64, e
 
 	offset := (page - 1) * pageSize
 	
-	err := r.db.Offset(offset).Limit(pageSize).Preload("Topics").Find(&quizzes).Error
+	err := r.db.Offset(offset).Limit(pageSize).Preload("Topics").Preload("Questions").Preload("Attempts").Find(&quizzes).Error
 	if err != nil {
 		return nil, 0, err
 	}

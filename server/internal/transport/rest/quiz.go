@@ -21,7 +21,7 @@ type OptionRequest struct {
 }
 
 type QuizAttemptRequest struct {
-	QuizID  uint          `json:"quizId" binding:"required"`
+	QuizID  uint         `json:"quizId" binding:"required"`
 	Answers []AnswerRequest `json:"answers" binding:"required"`
 }
 

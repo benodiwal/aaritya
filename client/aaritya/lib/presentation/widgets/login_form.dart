@@ -110,7 +110,7 @@ class _LoginFormState extends State<LoginForm> {
                     TextButton(
                       onPressed: widget.onSignUpPressed,
                       child: Text(
-                        'New to app? Sign Up',
+                        'New to app?',
                         style: TextStyle(color: Theme.of(context).primaryColor),
                       ),
                     ),
