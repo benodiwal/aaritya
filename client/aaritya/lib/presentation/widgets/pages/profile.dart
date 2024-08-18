@@ -14,6 +14,7 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   final ApiService _apiService = ApiService();
   Map<String, dynamic>? _profileData;
+  List<Map<String, dynamic>>? _recentQuizzes;
   bool _isLoading = true;
   File? _image;
   final ImagePicker _picker = ImagePicker();
@@ -29,9 +30,11 @@ class _ProfilePageState extends State<ProfilePage> {
     try {
       final profileData = await _apiService.getUserProfile();
       final rank = await _apiService.getUserRank();
+      final recentQuizzes = await _apiService.getUserQuizzes();
       setState(() {
         _profileData = profileData;
         _profileData!['rank'] = rank;
+        _recentQuizzes = recentQuizzes;
         _isLoading = false;
       });
     } catch (e) {
@@ -79,13 +82,16 @@ class _ProfilePageState extends State<ProfilePage> {
               onPressed: () async {
                 try {
                   await _apiService.logout();
-                  Provider.of<AuthenticationState>(context, listen: false).setAuthenticated(false);
-                  Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+                  Provider.of<AuthenticationState>(context, listen: false)
+                      .setAuthenticated(false);
+                  Navigator.of(context)
+                      .pushNamedAndRemoveUntil('/login', (route) => false);
                 } catch (e) {
                   print('Error during logout: $e');
                   ScaffoldMessenger.of(context).showSnackBar(
-                   SnackBar(content: Text('Failed to logout. Please try again.')),
-                );
+                    SnackBar(
+                        content: Text('Failed to logout. Please try again.')),
+                  );
                 }
               },
               icon: Icon(Icons.logout))
@@ -218,9 +224,6 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildRecentActivityCard(BuildContext context) {
-    List<Map<String, dynamic>> recentActivities =
-        _profileData?['recentActivities'] ?? [];
-
     return Card(
       margin: EdgeInsets.symmetric(horizontal: 16),
       child: Padding(
@@ -228,18 +231,51 @@ class _ProfilePageState extends State<ProfilePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Recent Activity',
+            Text('Recent Quiz Activity',
                 style: Theme.of(context).textTheme.headlineSmall),
             SizedBox(height: 10),
-            ...recentActivities
-                .map((activity) => _buildActivityItem(
-                    activity['description'], activity['time']))
-                .toList(),
+            if (_recentQuizzes != null && _recentQuizzes!.isNotEmpty)
+              ..._recentQuizzes!.take(5).map(_buildQuizActivityItem).toList()
+            else
+              Text('No recent quiz activity'),
           ],
         ),
       ),
     );
   }
+
+    Widget _buildQuizActivityItem(Map<String, dynamic> quiz) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(quiz['Title'] ?? 'Untitled Quiz',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                Text(quiz['Category'] ?? 'No Category',
+                    style: TextStyle(fontSize: 12, color: Colors.grey)),
+              ],
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text('Score: ${quiz['Score'] ?? 'N/A'}',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              Text(quiz['Date'] ?? 'No Date',
+                  style: TextStyle(fontSize: 12, color: Colors.grey)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 
   Widget _buildActivityItem(String activity, String time) {
     return Padding(
@@ -252,5 +288,4 @@ class _ProfilePageState extends State<ProfilePage> {
         ],
       ),
     );
-  }
 }

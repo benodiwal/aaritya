@@ -8,7 +8,7 @@ import 'package:http/http.dart' as http;
 
 class ApiService {
   final _storage = const FlutterSecureStorage();
-  static const String baseUrl = 'https://9b69-36-255-84-98.ngrok-free.app';
+  static const String baseUrl = 'https://4630-36-255-84-98.ngrok-free.app';
 
   Future<Map<String, String>> _getHeaders() async {
     final token = await _storage.read(key: Keys.jwtTokenKey);
