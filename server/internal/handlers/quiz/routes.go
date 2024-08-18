@@ -44,7 +44,8 @@ func (q *QuizHandler) Create(ctx *gin.Context) {
 			return
 		}
 
-		for _, o := range question.Options {
+		for _, o := range ques.Options {
+			fmt.Println(o)
 			option := models.Option {
 				QuestionID: question.ID,
 				OptionText: o.OptionText,
