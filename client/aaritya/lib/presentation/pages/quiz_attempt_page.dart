@@ -186,7 +186,7 @@ class _QuizAttemptPageState extends State<QuizAttemptPage> {
     );
   }
 
-  Widget _buildQuestionScreen() {
+    Widget _buildQuestionScreen() {
     if (_currentQuestionIndex >= _questions.length) {
       return const Center(child: Text('No more questions available'));
     }
@@ -213,10 +213,19 @@ class _QuizAttemptPageState extends State<QuizAttemptPage> {
               .map((entry) {
             final index = entry.key;
             final option = entry.value;
+            final isSelected = _userAnswers[_currentQuestionIndex] == index;
             return Padding(
               padding: const EdgeInsets.only(bottom: 8.0),
               child: ElevatedButton(
                 onPressed: () => _answerQuestion(index),
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all(
+                    isSelected ? Colors.blue : null,
+                  ),
+                  foregroundColor: MaterialStateProperty.all(
+                    isSelected ? Colors.white : null,
+                  ),
+                ),
                 child: Text(option['OptionText'] ?? ''),
               ),
             );

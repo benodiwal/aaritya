@@ -23,7 +23,7 @@ func ConnectDatabase(logger *log.Logger) *Database {
 	db_name := env.GetEnv(env.DB_NAME)
 	db_port := env.GetEnv(env.DB_PORT)
 
-	db_url := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", db_host, db_user, db_password, db_name, db_port)
+	db_url := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=require", db_host, db_user, db_password, db_name, db_port)
 	DB, err := gorm.Open(db_driver, db_url)
 
 	if err != nil {
