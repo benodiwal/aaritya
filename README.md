@@ -2,6 +2,8 @@
 
 This Flutter-based mobile application provides an interactive platform for users to take quizzes, track their progress, and manage their profiles. The app features a user-friendly interface, real-time scoring, and a personalized user experience.
 
+⚠️ Server has a cold start
+
 ## Features
 - User Authentication (Login/Signup)
 - Profile Management
