@@ -135,16 +135,26 @@ class ApiService {
   }
 
   Future<bool> createQuiz(Map<String, dynamic> quizData) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/quiz'),
-      headers: await _getHeaders(),
-      body: jsonEncode(quizData),
-    );
+    print("ApiService: Attempting to create quiz"); // Debug print
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/quiz'),
+        headers: await _getHeaders(),
+        body: jsonEncode(quizData),
+      );
 
-    if (response.statusCode == 201) {
-      return true;
-    } else {
-      throw Exception('Failed to create quiz');
+      print("ApiService: Received response with status code: ${response.statusCode}");
+
+      if (response.statusCode == 201) {
+        print("ApiService: Quiz created successfully");
+        return true;
+      } else {
+        print("ApiService: Failed to create quiz. Response body: ${response.body}");
+        return false;
+      }
+    } catch (e) {
+      print("ApiService: Error creating quiz: $e");
+      return false;
     }
   }
 
