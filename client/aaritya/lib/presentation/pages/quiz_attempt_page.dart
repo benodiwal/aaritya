@@ -4,7 +4,6 @@ import 'dart:async';
 
 class QuizAttemptPage extends StatefulWidget {
   final Map<String, dynamic> quiz;
-
   const QuizAttemptPage({Key? key, required this.quiz}) : super(key: key);
 
   @override
@@ -30,11 +29,12 @@ class _QuizAttemptPageState extends State<QuizAttemptPage> {
 
   Future<void> _loadQuizQuestions() async {
     try {
-      final quizData = await _apiService.getQuizById(widget.quiz['id']);
+      final quizData = await _apiService.getQuizById(widget.quiz['ID'].toString());
       setState(() {
-        _questions = List<Map<String, dynamic>>.from(quizData['questions']);
+          _questions = List<Map<String, dynamic>>.from(quizData['Questions']);
         _userAnswers = List.filled(_questions.length, null);
-        _timeRemaining = _parseTimeLimit(quizData['timeLimit']);
+        _timeRemaining =
+            quizData['TimeLimit'] * 60;
         _isLoading = false;
       });
       startTimer();
@@ -44,19 +44,6 @@ class _QuizAttemptPageState extends State<QuizAttemptPage> {
         _isLoading = false;
       });
     }
-  }
-
-  int _parseTimeLimit(dynamic timeLimit) {
-    if (timeLimit is int) {
-      return timeLimit * 60;
-    } else if (timeLimit is String) {
-      final RegExp regex = RegExp(r'(\d+)');
-      final match = regex.firstMatch(timeLimit);
-      if (match != null) {
-        return int.parse(match.group(1)!) * 60;
-      }
-    }
-    return 600;
   }
 
   void startTimer() {
@@ -116,17 +103,36 @@ class _QuizAttemptPageState extends State<QuizAttemptPage> {
     });
 
     try {
-      await _apiService.submitQuizAttempt(
-        widget.quiz['id'],
-        _userAnswers.asMap().entries.map((entry) {
-          return {
-            'questionId': _questions[entry.key]['id'],
-            'answerId': entry.value,
-          };
-        }).toList(),
+      final answers = _userAnswers
+          .asMap()
+          .entries
+          .map((entry) {
+            final questionIndex = entry.key;
+            final answerIndex = entry.value;
+            if (answerIndex != null) {
+              return {
+                'questionId': _questions[questionIndex]['ID'],
+                'optionId': _questions[questionIndex]['Options'][answerIndex]
+                    ['ID'],
+              };
+            }
+            return null;
+          })
+          .where((answer) => answer != null)
+          .toList()
+          .cast<Map<String, dynamic>>();
+
+      final success = await _apiService.submitQuizAttempt(
+        widget.quiz['ID'],
+        answers,
       );
+
       setState(() {
         _isLoading = false;
+        if (success) {
+        } else {
+          _error = 'Failed to submit quiz attempt';
+        }
       });
     } catch (e) {
       setState(() {
@@ -139,8 +145,9 @@ class _QuizAttemptPageState extends State<QuizAttemptPage> {
   int _calculateScore() {
     int score = 0;
     for (int i = 0; i < _questions.length; i++) {
-      if (_userAnswers[i] == _questions[i]['correctAnswer']) {
-        score++;
+      if (_userAnswers[i] != null &&
+          _questions[i]['Options'][_userAnswers[i]!]['IsCorrect']) {
+          score += (_questions[i]['Points'] as num).toInt();
       }
     }
     return score;
@@ -156,7 +163,7 @@ class _QuizAttemptPageState extends State<QuizAttemptPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.quiz['title'] ?? 'Quiz'),
+        title: Text(widget.quiz['Title'] ?? 'Quiz'),
         actions: [
           Center(
             child: Padding(
@@ -196,18 +203,21 @@ class _QuizAttemptPageState extends State<QuizAttemptPage> {
           ),
           const SizedBox(height: 16),
           Text(
-            question['text'] as String? ?? 'No question available',
+            question['QuestionText'] as String? ?? 'No question available',
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 24),
-          ...(question['options'] as List<dynamic>? ?? []).asMap().entries.map((entry) {
+          ...(question['Options'] as List<dynamic>? ?? [])
+              .asMap()
+              .entries
+              .map((entry) {
             final index = entry.key;
             final option = entry.value;
             return Padding(
               padding: const EdgeInsets.only(bottom: 8.0),
               child: ElevatedButton(
                 onPressed: () => _answerQuestion(index),
-                child: Text(option['text'] ?? ''),
+                child: Text(option['OptionText'] ?? ''),
               ),
             );
           }).toList(),
@@ -223,9 +233,7 @@ class _QuizAttemptPageState extends State<QuizAttemptPage> {
               else
                 SizedBox(),
               ElevatedButton(
-                onPressed: _userAnswers[_currentQuestionIndex] != null
-                    ? _nextQuestion
-                    : null,
+                onPressed: _nextQuestion,
                 child: Text(_currentQuestionIndex == _questions.length - 1
                     ? 'Finish'
                     : 'Next'),
@@ -239,7 +247,7 @@ class _QuizAttemptPageState extends State<QuizAttemptPage> {
 
   Widget _buildResultScreen() {
     final score = _calculateScore();
-    final totalTime = _parseTimeLimit(widget.quiz['timeLimit']);
+    final totalPoints = widget.quiz['TotalPoints'];
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -250,14 +258,22 @@ class _QuizAttemptPageState extends State<QuizAttemptPage> {
           ),
           SizedBox(height: 16),
           Text(
-            'Your Score: $score out of ${_questions.length}',
+            'Your Score: $score out of $totalPoints',
             style: Theme.of(context).textTheme.titleLarge,
           ),
           SizedBox(height: 8),
           Text(
-            'Time taken: ${_formatTime(totalTime - _timeRemaining)}',
+            'Time taken: ${_formatTime(widget.quiz['TimeLimit'] * 60 - _timeRemaining)}',
             style: Theme.of(context).textTheme.titleMedium,
           ),
+          if (_error != null)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                _error!,
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
           SizedBox(height: 24),
           ElevatedButton(
             onPressed: () {

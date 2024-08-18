@@ -25,111 +25,97 @@ class _SignupFormState extends State<SignupForm> {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return SingleChildScrollView(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: constraints.maxHeight),
-            child: IntrinsicHeight(
-              child: Padding(
-                padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.05),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Animate(
-                      effects: [FadeEffect(duration: 600.ms), SlideEffect(begin: Offset(0, -0.2), end: Offset.zero, duration: 600.ms)],
-                      child: Text(
-                        'Create Account',
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).primaryColor,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                    SizedBox(height: MediaQuery.of(context).size.height * 0.05),
-                    Animate(
-                      effects: [FadeEffect(duration: 600.ms, delay: 200.ms), SlideEffect(begin: Offset(-0.2, 0), end: Offset.zero, duration: 600.ms)],
-                      child: _buildTextField(
-                        controller: _usernameController,
-                        labelText: 'Username',
-                        prefixIcon: Icons.person,
-                      ),
-                    ),
-                    SizedBox(height: MediaQuery.of(context).size.height * 0.02),
-                    Animate(
-                      effects: [FadeEffect(duration: 600.ms, delay: 400.ms), SlideEffect(begin: Offset(0.2, 0), end: Offset.zero, duration: 600.ms)],
-                      child: _buildTextField(
-                        controller: _emailController,
-                        labelText: 'Email',
-                        prefixIcon: Icons.email,
-                        keyboardType: TextInputType.emailAddress,
-                      ),
-                    ),
-                    SizedBox(height: MediaQuery.of(context).size.height * 0.02),
-                    Animate(
-                      effects: [FadeEffect(duration: 600.ms, delay: 600.ms), SlideEffect(begin: Offset(-0.2, 0), end: Offset.zero, duration: 600.ms)],
-                      child: _buildTextField(
-                        controller: _passwordController,
-                        labelText: 'Password',
-                        prefixIcon: Icons.lock,
-                        obscureText: !_isPasswordVisible,
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _isPasswordVisible ? Icons.visibility_off : Icons.visibility,
-                            color: Theme.of(context).primaryColor,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _isPasswordVisible = !_isPasswordVisible;
-                            });
-                          },
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: MediaQuery.of(context).size.height * 0.03),
-                    Animate(
-                      effects: [FadeEffect(duration: 600.ms, delay: 800.ms), SlideEffect(begin: Offset(0, 0.2), end: Offset.zero, duration: 600.ms)],
-                      child: ElevatedButton(
-                        onPressed: () => widget.onSubmit(
-                          _usernameController.text,
-                          _emailController.text,
-                          _passwordController.text,
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(vertical: MediaQuery.of(context).size.height * 0.02),
-                          child: Text(
-                            widget.buttonText,
-                            style: TextStyle(fontSize: MediaQuery.of(context).size.width * 0.045),
-                          ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          elevation: 2,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: MediaQuery.of(context).size.height * 0.02),
-                    Animate(
-                      effects: [FadeEffect(duration: 600.ms, delay: 1000.ms)],
-                      child: TextButton(
-                        onPressed: widget.onLoginPressed,
-                        child: Text(
-                          'Already a user? Log In',
-                          style: TextStyle(color: Theme.of(context).primaryColor),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Animate(
+          effects: [FadeEffect(duration: 600.ms), SlideEffect(begin: Offset(0, -0.2), end: Offset.zero, duration: 600.ms)],
+          child: Text(
+            'Create Account',
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).primaryColor,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+        SizedBox(height: 24),
+        Animate(
+          effects: [FadeEffect(duration: 600.ms, delay: 200.ms), SlideEffect(begin: Offset(-0.2, 0), end: Offset.zero, duration: 600.ms)],
+          child: _buildTextField(
+            controller: _usernameController,
+            labelText: 'Username',
+            prefixIcon: Icons.person,
+          ),
+        ),
+        SizedBox(height: 16),
+        Animate(
+          effects: [FadeEffect(duration: 600.ms, delay: 400.ms), SlideEffect(begin: Offset(0.2, 0), end: Offset.zero, duration: 600.ms)],
+          child: _buildTextField(
+            controller: _emailController,
+            labelText: 'Email',
+            prefixIcon: Icons.email,
+            keyboardType: TextInputType.emailAddress,
+          ),
+        ),
+        SizedBox(height: 16),
+        Animate(
+          effects: [FadeEffect(duration: 600.ms, delay: 600.ms), SlideEffect(begin: Offset(-0.2, 0), end: Offset.zero, duration: 600.ms)],
+          child: _buildTextField(
+            controller: _passwordController,
+            labelText: 'Password',
+            prefixIcon: Icons.lock,
+            obscureText: !_isPasswordVisible,
+            suffixIcon: IconButton(
+              icon: Icon(
+                _isPasswordVisible ? Icons.visibility_off : Icons.visibility,
+                color: Theme.of(context).primaryColor,
               ),
+              onPressed: () {
+                setState(() {
+                  _isPasswordVisible = !_isPasswordVisible;
+                });
+              },
             ),
           ),
-        );
-      },
+        ),
+        SizedBox(height: 24),
+        Animate(
+          effects: [FadeEffect(duration: 600.ms, delay: 800.ms), SlideEffect(begin: Offset(0, 0.2), end: Offset.zero, duration: 600.ms)],
+          child: ElevatedButton(
+            onPressed: () => widget.onSubmit(
+              _usernameController.text,
+              _emailController.text,
+              _passwordController.text,
+            ),
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 12),
+              child: Text(
+                widget.buttonText,
+                style: TextStyle(fontSize: 16),
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 2,
+            ),
+          ),
+        ),
+        SizedBox(height: 16),
+        Animate(
+          effects: [FadeEffect(duration: 600.ms, delay: 1000.ms)],
+          child: TextButton(
+            onPressed: widget.onLoginPressed,
+            child: Text(
+              'Already a user? Log In',
+              style: TextStyle(color: Theme.of(context).primaryColor),
+            ),
+          ),
+        ),
+      ],
     );
   }
 

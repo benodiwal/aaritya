@@ -120,6 +120,7 @@ func (q *QuizHandler) Get(ctx *gin.Context) {
 func (q *QuizHandler) SubmitQuizAttempt(ctx *gin.Context) {
 	var req rest.QuizAttemptRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
+		fmt.Println(err)
 		ctx.JSON(http.StatusBadRequest, gin.H {"error": err.Error()})
 		return
 	}
