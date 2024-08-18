@@ -56,3 +56,7 @@ func (r *TopicRepository) ListTopics(page, pageSize int) ([]models.Topic, error)
 	err := r.db.Offset(offset).Limit(pageSize).Find(&topics).Error
 	return topics, err
 }
+
+func (r *QuizRepository) AddTopicToQuiz(quiz *models.Quiz, topic *models.Topic) error {
+	return r.db.Model(quiz).Association("Topics").Append(topic).Error
+}
