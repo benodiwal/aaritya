@@ -19,6 +19,8 @@ const (
 	DB_NAME
 	DB_PORT
 	JWT_SECRET
+	AWS_REGION
+	S3_BUCKET_NAME
 )
 
 var keys = []string{
@@ -31,6 +33,8 @@ var keys = []string{
 	"DB_NAME",
 	"DB_PORT",
 	"JWT_SECRET",
+	"AWS_REGION",
+	"S3_BUCKET_NAME",
 }
 
 var envs = map[string]string{

@@ -1,7 +1,9 @@
+import 'package:aaritya/main.dart';
 import 'package:flutter/material.dart';
 import 'package:aaritya/core/network/api_service.dart';
 import 'package:aaritya/presentation/widgets/login_form.dart';
-import 'package:aaritya/presentation/pages/signup_page.dart'; // Make sure this import is correct
+import 'package:aaritya/presentation/pages/signup_page.dart';
+import 'package:provider/provider.dart';
 
 class LoginPage extends StatelessWidget {
   final ApiService _apiService = ApiService();
@@ -11,6 +13,7 @@ class LoginPage extends StatelessWidget {
   void _login(BuildContext context, String email, String password) async {
     try {
       await _apiService.login(email, password);
+      Provider.of<AuthenticationState>(context, listen: false).setAuthenticated(true);
       Navigator.of(context).pushReplacementNamed('/home');
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(

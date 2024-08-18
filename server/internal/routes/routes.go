@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/benodiwal/server/internal/env"
 	"github.com/benodiwal/server/internal/handlers/auth"
 	"github.com/benodiwal/server/internal/handlers/quiz"
 	"github.com/benodiwal/server/internal/handlers/user"
@@ -13,7 +14,7 @@ import (
 
 func (r *Router) RegisterRoutes() {
 
-	s3Service, err := services.NewS3Service("your-aws-region", "your-s3-bucket-name")
+	s3Service, err := services.NewS3Service(env.GetEnv(env.AWS_REGION), env.GetEnv(env.S3_BUCKET_NAME))
 	if err != nil {
 		log.Fatalf("Failed to initialize S3 service: %v", err)
 	}
